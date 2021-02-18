@@ -60,6 +60,9 @@ public class Bot {
             }
         }
 
+        for (Worm)
+
+
         if (enemyWorm != null) {
             Direction direction = resolveDirection(currentWorm.position, enemyWorm.position);
             boolean safe = true;
@@ -174,7 +177,7 @@ public class Bot {
             String enemyPosition = String.format("%d_%d", enemyWorm.position.x, enemyWorm.position.y);
             if (cells.contains(enemyPosition) && enemyWorm.health > 0) {
                 if (currentWorm.id == 3){
-                    for (Worm myCacing : GameState.myPlayer.worms){
+                    for (Worm myCacing : gameState.myPlayer.worms){
                         if (getFirstWormInRange(myCacing) == enemyWorm){
                             return enemyWorm;    
                         }
