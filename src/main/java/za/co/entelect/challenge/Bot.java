@@ -35,45 +35,42 @@ public class Bot {
 
         if (enemyWormCanLob != null && currentWorm.id != 1) {
             if (currentWorm.id == 2){
-                if (euclideanDistance(currentWorm.position.x, currentWorm.position.y, enemyWormCanLob.position.x, enemyWormCanLob.position.y) <= currentWorm.bananaBombs.range && currentWorm.bananaBombs.count > 0) {
-                    boolean safe = true;
-                    for (int i = 0; i < gameState.myPlayer.worms.length; i++) {
-                        if (euclideanDistance(AlliesPos(i).x, AlliesPos(i).y, enemyWormCanLob.position.x, enemyWormCanLob.position.y) < currentWorm.bananaBombs.damageRadius && gameState.myPlayer.worms[i].health > 0)
-                            safe = false;
-                    }
-                    if (safe || currentWorm.health < 60) {
-                        return new BananaBombCommand(enemyWormCanLob.position.x, enemyWormCanLob.position.y);
-                    }
+                if (canBanana(currentWorm,enemyWormCanLob)){
+                    return new BananaBombCommand(enemyWormCanLob.position.x, enemyWormCanLob.position.y);
                 }
             }
             if (currentWorm.id == 3){
-                if (euclideanDistance(currentWorm.position.x, currentWorm.position.y, enemyWormCanLob.position.x, enemyWormCanLob.position.y) <= currentWorm.snowballs.range && currentWorm.snowballs.count > 0) {
-                    boolean safe = true;
-                    for (int i = 0; i < gameState.myPlayer.worms.length; i++) {
-                        if (euclideanDistance(AlliesPos(i).x, AlliesPos(i).y, enemyWormCanLob.position.x, enemyWormCanLob.position.y) < currentWorm.snowballs.freezeRadius && gameState.myPlayer.worms[i].health > 0)
-                            safe = false;
-                    }
-                    if ((safe || currentWorm.health < 30) && enemyWorm != null && enemyWormCanLob.roundsUntilUnfrozen == 0){
-                        return new SnowballCommand(enemyWormCanLob.position.x, enemyWormCanLob.position.y);
-                    }
+                if (canSnowBall(currentWorm,enemyWormCanLob)){
+                    return new SnowballCommand(enemyWormCanLob.position.x, enemyWormCanLob.position.y);
                 }
             }
         }
 
-        // for (Worm)
-
-
-        if (enemyWorm != null) {
-            Direction direction = resolveDirection(currentWorm.position, enemyWorm.position);
-            boolean safe = true;
-            for (int i = 0; i < gameState.myPlayer.worms.length; i++) {
-                if (currentWorm.id != gameState.myPlayer.worms[i].id) {
-                    if (direction == resolveDirection(currentWorm.position, AlliesPos(i)) && gameState.myPlayer.worms[i].health > 0) {
-                        safe = false;
+        for (int i =0; i < gameState.myPlayer.worms.length; i++){
+            Worm enemy = getFirstWormInRange(gameState.myPlayer.worms[i]);
+            MyWorm cacinglokal = gameState.myPlayer.worms[i]; 
+            if (enemy && cacinglokal.id != currentWorm.id && cacinglokal.health > 0){
+                if (cacinglokal.id == 2){
+                    if (canBanana(cacinglokal,enemy)){
+                        return new SelectCommand(cacinglokal.id, String.format("banana %d %d", enemy.position.x, enemy.position.y));
                     }
                 }
+                if (cacinglokal.id == 3){
+                    if (canSnowBall(cacinglokal,enemy)){
+                        return new SelectCommand(cacinglokal.id, String.format("snowball %d %d", enemy.position.x,enemy.position.y));
+                    }
+                }
+                if (canShoot(cacinglokal,enemy)){
+                    Direction direction = resolveDirection(cacinglokal.position, enemy.position);
+                    return new SelectCommand(cacinglokal.id, String.format("shoot %s", direction.name()));
+                }
             }
-            if (safe) {
+        }
+
+
+        if (enemyWorm) {
+            Direction direction = resolveDirection(currentWorm.position, enemyWorm.position);
+            if (canShoot(currentWorm,enemyWorm)) {
                 return new ShootCommand(direction);
             }
         }
@@ -130,6 +127,46 @@ public class Bot {
         return new DoNothingCommand();
     }
 
+    public boolean canBanana(MyWorm cacingku,Worm enemy){
+        if (euclideanDistance(cacingku.position.x, cacingku.position.y, enemy.position.x, enemy.position.y) <= cacingku.bananaBombs.range && cacingku.bananaBombs.count > 0) {
+            boolean safe = true;
+            for (int i = 0; i < gameState.myPlayer.worms.length; i++) {
+                if (euclideanDistance(AlliesPos(i).x, AlliesPos(i).y, enemy.position.x, enemy.position.y) < cacingku.bananaBombs.damageRadius && gameState.myPlayer.worms[i].health > 0)
+                    safe = false;
+            }
+            if (safe || cacingku.health > 60) {
+                return true;
+            }
+            return false;
+        }
+    }
+
+    public boolean canSnowBall(MyWorm cacingku, Worm enemy){
+        if (euclideanDistance(cacingku.position.x, cacingku.position.y, enemy.position.x, enemy.position.y) <= cacingku.snowballs.range && cacingku.snowballs.count > 0) {
+            boolean safe = true;
+            for (int i = 0; i < gameState.myPlayer.worms.length; i++) {
+                if (euclideanDistance(AlliesPos(i).x, AlliesPos(i).y, enemy.position.x, enemy.position.y) < cacingku.snowballs.freezeRadius && gameState.myPlayer.worms[i].health > 0)
+                    safe = false;
+            }
+            if ((safe || cacingku.health > 30) && enemyWorm != null && enemy.roundsUntilUnfrozen == 0){
+                return true;
+            }
+        }
+    }
+
+    public boolean canShoot(MyWorm cacingku, Worm enemy){
+        Direction direction = resolveDirection(cacingku.position, enemy.position);
+            boolean safe = true;
+            for (int i = 0; i < gameState.myPlayer.worms.length; i++) {
+                if (cacingku.id != gameState.myPlayer.worms[i].id) {
+                    if (direction == resolveDirection(cacingku.position, AlliesPos(i)) && gameState.myPlayer.worms[i].health > 0) {
+                        safe = false;
+                    }
+                }
+            }
+        return safe;
+    }
+
     private Worm getFirstWormInRange() {
 
         Set<String> cells = constructFireDirectionLines(currentWorm.weapon.range)
@@ -150,7 +187,7 @@ public class Bot {
 
     private Worm getFirstWormInRange(MyWorm myCacing) {
 
-        Set<String> cells = constructFireDirectionLines(myCacing.weapon.range)
+        Set<String> cells = constructFireDirectionLines(myCacing,myCacing.weapon.range)
                 .stream()
                 .flatMap(Collection::stream)
                 .map(cell -> String.format("%d_%d", cell.x, cell.y))
@@ -206,6 +243,35 @@ public class Bot {
                 }
 
                 if (euclideanDistance(currentWorm.position.x, currentWorm.position.y, coordinateX, coordinateY) > range) {
+                    break;
+                }
+
+                Cell cell = gameState.map[coordinateY][coordinateX];
+                if (cell.type != CellType.AIR) {
+                    break;
+                }
+
+                directionLine.add(cell);
+            }
+            directionLines.add(directionLine);
+        }
+
+        return directionLines;
+    }
+    private List<List<Cell>> constructFireDirectionLines(MyWorm cacingku, int range) {
+        List<List<Cell>> directionLines = new ArrayList<>();
+        for (Direction direction : Direction.values()) {
+            List<Cell> directionLine = new ArrayList<>();
+            for (int directionMultiplier = 1; directionMultiplier <= range; directionMultiplier++) {
+
+                int coordinateX = cacingku.position.x + (directionMultiplier * direction.x);
+                int coordinateY = cacingku.position.y + (directionMultiplier * direction.y);
+
+                if (!isValidCoordinate(coordinateX, coordinateY)) {
+                    break;
+                }
+
+                if (euclideanDistance(cacingku.position.x, cacingku.position.y, coordinateX, coordinateY) > range) {
                     break;
                 }
 
