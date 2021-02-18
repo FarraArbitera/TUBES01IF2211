@@ -60,7 +60,7 @@ public class Bot {
             }
         }
 
-        for (Worm)
+        // for (Worm)
 
 
         if (enemyWorm != null) {
@@ -148,7 +148,7 @@ public class Bot {
         return null;
     }
 
-    private Worm getFirstWormInRange(Worm myCacing) {
+    private Worm getFirstWormInRange(MyWorm myCacing) {
 
         Set<String> cells = constructFireDirectionLines(myCacing.weapon.range)
                 .stream()
@@ -177,7 +177,7 @@ public class Bot {
             String enemyPosition = String.format("%d_%d", enemyWorm.position.x, enemyWorm.position.y);
             if (cells.contains(enemyPosition) && enemyWorm.health > 0) {
                 if (currentWorm.id == 3){
-                    for (Worm myCacing : gameState.myPlayer.worms){
+                    for (MyWorm myCacing : gameState.myPlayer.worms){
                         if (getFirstWormInRange(myCacing) == enemyWorm){
                             return enemyWorm;    
                         }
