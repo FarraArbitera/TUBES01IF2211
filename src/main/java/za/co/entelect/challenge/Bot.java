@@ -145,9 +145,9 @@ public class Bot {
         return null;
     }
 
-    private Worm getFirstWormInRangeLob() {
+    private Worm getFirstWormInRange(Worm myCacing) {
 
-        Set<String> cells = constructFireDirectionLines(currentWorm.weapon.range)
+        Set<String> cells = constructFireDirectionLines(myCacing.weapon.range)
                 .stream()
                 .flatMap(Collection::stream)
                 .map(cell -> String.format("%d_%d", cell.x, cell.y))
@@ -157,6 +157,32 @@ public class Bot {
             String enemyPosition = String.format("%d_%d", enemyWorm.position.x, enemyWorm.position.y);
             if (cells.contains(enemyPosition) && enemyWorm.health > 0) {
                 return enemyWorm;
+            }
+        }
+
+        return null;
+    }
+
+    private Worm getFirstWormInRangeLob() {
+        Set<String> cells = constructFireDirectionLobs(5)
+                .stream()
+                .flatMap(Collection::stream)
+                .map(cell -> String.format("%d_%d", cell.x, cell.y))
+                .collect(Collectors.toSet());
+
+        for (Worm enemyWorm : opponent.worms) {
+            String enemyPosition = String.format("%d_%d", enemyWorm.position.x, enemyWorm.position.y);
+            if (cells.contains(enemyPosition) && enemyWorm.health > 0) {
+                if (currentWorm.id == 3){
+                    for (Worm myCacing : GameState.myPlayer.worms){
+                        if (getFirstWormInRange(myCacing) == enemyWorm){
+                            return enemyWorm;    
+                        }
+                    }
+                }else{
+                    return enemyWorm;
+                }
+                
             }
         }
 
@@ -182,6 +208,36 @@ public class Bot {
 
                 Cell cell = gameState.map[coordinateY][coordinateX];
                 if (cell.type != CellType.AIR) {
+                    break;
+                }
+
+                directionLine.add(cell);
+            }
+            directionLines.add(directionLine);
+        }
+
+        return directionLines;
+    }
+
+    private List<List<Cell>> constructFireDirectionLobs(int range) {
+        List<List<Cell>> directionLines = new ArrayList<>();
+        for (Direction direction : Direction.values()) {
+            List<Cell> directionLine = new ArrayList<>();
+            for (int directionMultiplier = 1; directionMultiplier <= range; directionMultiplier++) {
+
+                int coordinateX = currentWorm.position.x + (directionMultiplier * direction.x);
+                int coordinateY = currentWorm.position.y + (directionMultiplier * direction.y);
+
+                if (!isValidCoordinate(coordinateX, coordinateY)) {
+                    break;
+                }
+
+                if (euclideanDistance(currentWorm.position.x, currentWorm.position.y, coordinateX, coordinateY) > range) {
+                    break;
+                }
+
+                Cell cell = gameState.map[coordinateY][coordinateX];
+                if (cell.type == CellType.DEEP_SPACE) {
                     break;
                 }
 
