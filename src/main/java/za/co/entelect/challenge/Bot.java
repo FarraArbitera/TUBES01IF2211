@@ -49,7 +49,7 @@ public class Bot {
         for (int i =0; i < gameState.myPlayer.worms.length; i++){
             Worm enemy = getFirstWormInRange(gameState.myPlayer.worms[i]);
             MyWorm cacinglokal = gameState.myPlayer.worms[i]; 
-            if (enemy && cacinglokal.id != currentWorm.id && cacinglokal.health > 0){
+            if (enemy != null && cacinglokal.id != currentWorm.id && cacinglokal.health > 0){
                 if (cacinglokal.id == 2){
                     if (canBanana(cacinglokal,enemy)){
                         return new SelectCommand(cacinglokal.id, String.format("banana %d %d", enemy.position.x, enemy.position.y));
@@ -68,7 +68,7 @@ public class Bot {
         }
 
 
-        if (enemyWorm) {
+        if (enemyWorm != null) {
             Direction direction = resolveDirection(currentWorm.position, enemyWorm.position);
             if (canShoot(currentWorm,enemyWorm)) {
                 return new ShootCommand(direction);
@@ -137,8 +137,8 @@ public class Bot {
             if (safe || cacingku.health > 60) {
                 return true;
             }
-            return false;
         }
+        return false;
     }
 
     public boolean canSnowBall(MyWorm cacingku, Worm enemy){
@@ -148,10 +148,11 @@ public class Bot {
                 if (euclideanDistance(AlliesPos(i).x, AlliesPos(i).y, enemy.position.x, enemy.position.y) < cacingku.snowballs.freezeRadius && gameState.myPlayer.worms[i].health > 0)
                     safe = false;
             }
-            if ((safe || cacingku.health > 30) && enemyWorm != null && enemy.roundsUntilUnfrozen == 0){
+            if ((safe || cacingku.health > 30) && getFirstWormInRange() != null && enemy.roundsUntilUnfrozen == 0){
                 return true;
             }
         }
+        return false;
     }
 
     public boolean canShoot(MyWorm cacingku, Worm enemy){
