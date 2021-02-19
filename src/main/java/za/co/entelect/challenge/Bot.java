@@ -49,7 +49,7 @@ public class Bot {
         for (int i =0; i < gameState.myPlayer.worms.length; i++){
             Worm enemy = getFirstWormInRange(gameState.myPlayer.worms[i]);
             MyWorm cacinglokal = gameState.myPlayer.worms[i]; 
-            if (enemy != null && cacinglokal.id != currentWorm.id && cacinglokal.health > 0){
+            if (enemy != null && cacinglokal.id != currentWorm.id && cacinglokal.health > 0 && cacinglokal.roundsUntilUnfrozen==0){
                 if (cacinglokal.id == 2){
                     if (canBanana(cacinglokal,enemy)){
                         return new SelectCommand(cacinglokal.id, String.format("banana %d %d", enemy.position.x, enemy.position.y));
@@ -78,6 +78,98 @@ public class Bot {
         List<Cell> surroundingBlocks = getSurroundingCells(currentWorm.position.x, currentWorm.position.y);
         //int cellIdx = random.nextInt(surroundingBlocks.size());
         int CenterCell = gameState.mapSize / 2;
+        if (gameState.map.stream().anyMatch(x -> x.powerup)){
+            Cell nearest = gameState.map.stream().filter(c -> c.powerup).sort((a,b) -> euclideanDistance(a.x,a.y,currentWorm.position.x,currentWorm.position.y) - euclideanDistance(b.x,b.y,currentWorm.position.x,currentWorm.position.y))[0];
+            if (euclideanDistance(nearest.x,nearest.y,currentWorm.position.x,currentWorm.position.y) > euclideanDistance(CenterCell,CenterCell,currentWorm.position.x,currentWorm.position.y)){
+                for (int i = 0; i < surroundingBlocks.size(); i++) {
+                    Cell block = surroundingBlocks.get(i);
+                    if (currentWorm.position.x <= CenterCell && currentWorm.position.y <= CenterCell) {
+                        if (block.x > currentWorm.position.x && block.y > currentWorm.position.y) {
+                            if (block.type == CellType.AIR) {
+                                return new MoveCommand(block.x, block.y);
+                            } else if (block.type == CellType.DIRT) {
+                                return new DigCommand(block.x, block.y);
+                            }
+                        }
+                    }
+                    if (currentWorm.position.x > CenterCell && currentWorm.position.y <= CenterCell) {
+                        if (block.x < currentWorm.position.x && block.y > currentWorm.position.y) {
+                            if (block.type == CellType.AIR) {
+                                return new MoveCommand(block.x, block.y);
+                            } else if (block.type == CellType.DIRT) {
+                                return new DigCommand(block.x, block.y);
+                            }
+                        }
+                    }
+                    if (currentWorm.position.x <= CenterCell && currentWorm.position.y > CenterCell) {
+                        if (block.x > currentWorm.position.x && block.y < currentWorm.position.y) {
+                            if (block.type == CellType.AIR) {
+                                return new MoveCommand(block.x, block.y);
+                            } else if (block.type == CellType.DIRT) {
+                                return new DigCommand(block.x, block.y);
+                            }
+                        }
+                    }
+                    if (currentWorm.position.x > CenterCell && currentWorm.position.y > CenterCell) {
+                        if (block.x < currentWorm.position.x && block.y < currentWorm.position.y) {
+                            if (block.type == CellType.AIR) {
+                                return new MoveCommand(block.x, block.y);
+                            } else if (block.type == CellType.DIRT) {
+                                return new DigCommand(block.x, block.y);
+                            }
+                        }
+                    }
+                }
+            }else{
+                for (int i = 0; i < surroundingBlocks.size(); i++) {
+                    Cell block = surroundingBlocks.get(i);
+                    if (currentWorm.position.x <= nearest.x && currentWorm.position.y <= nearest.y) {
+                        if (block.x > currentWorm.position.x && block.y > currentWorm.position.y) {
+                            if (block.type == CellType.AIR) {
+                                return new MoveCommand(block.x, block.y);
+                            } else if (block.type == CellType.DIRT) {
+                                return new DigCommand(block.x, block.y);
+                            }
+                        }
+                    }
+                    if (currentWorm.position.x > nearest.x && currentWorm.position.y <= nearest.y) {
+                        if (block.x < currentWorm.position.x && block.y > currentWorm.position.y) {
+                            if (block.type == CellType.AIR) {
+                                return new MoveCommand(block.x, block.y);
+                            } else if (block.type == CellType.DIRT) {
+                                return new DigCommand(block.x, block.y);
+                            }
+                        }
+                    }
+                    if (currentWorm.position.x <= nearest.x && currentWorm.position.y > nearest.y) {
+                        if (block.x > currentWorm.position.x && block.y < currentWorm.position.y) {
+                            if (block.type == CellType.AIR) {
+                                return new MoveCommand(block.x, block.y);
+                            } else if (block.type == CellType.DIRT) {
+                                return new DigCommand(block.x, block.y);
+                            }
+                        }
+                    }
+                    if (currentWorm.position.x > nearest.x && currentWorm.position.y > nearest.y) {
+                        if (block.x < currentWorm.position.x && block.y < currentWorm.position.y) {
+                            if (block.type == CellType.AIR) {
+                                return new MoveCommand(block.x, block.y);
+                            } else if (block.type == CellType.DIRT) {
+                                return new DigCommand(block.x, block.y);
+                            }
+                        }
+                    }
+                }
+            }
+
+        
+                /* OLD CODE
+            if (block.type == CellType.AIR && (block.x != currentWorm.position.x && block.y != currentWorm.position.y)) {
+                return new MoveCommand(block.x, block.y);
+            } else if (block.type == CellType.DIRT && (block.x != currentWorm.position.x && block.y != currentWorm.position.y)) {
+                return new DigCommand(block.x, block.y);
+                 */
+        }
         for (int i = 0; i < surroundingBlocks.size(); i++) {
             Cell block = surroundingBlocks.get(i);
             if (currentWorm.position.x <= CenterCell && currentWorm.position.y <= CenterCell) {
@@ -116,12 +208,6 @@ public class Bot {
                     }
                 }
             }
-                /* OLD CODE
-            if (block.type == CellType.AIR && (block.x != currentWorm.position.x && block.y != currentWorm.position.y)) {
-                return new MoveCommand(block.x, block.y);
-            } else if (block.type == CellType.DIRT && (block.x != currentWorm.position.x && block.y != currentWorm.position.y)) {
-                return new DigCommand(block.x, block.y);
-                 */
         }
 
         return new DoNothingCommand();
@@ -142,13 +228,13 @@ public class Bot {
     }
 
     public boolean canSnowBall(MyWorm cacingku, Worm enemy){
-        if (euclideanDistance(cacingku.position.x, cacingku.position.y, enemy.position.x, enemy.position.y) <= cacingku.snowballs.range && cacingku.snowballs.count > 0) {
+        if (euclideanDistance(cacingku.position.x, cacingku`.position.y, enemy.position.x, enemy.position.y) <= cacingku.snowballs.range && cacingku.snowballs.count > 0) {
             boolean safe = true;
             for (int i = 0; i < gameState.myPlayer.worms.length; i++) {
                 if (euclideanDistance(AlliesPos(i).x, AlliesPos(i).y, enemy.position.x, enemy.position.y) < cacingku.snowballs.freezeRadius && gameState.myPlayer.worms[i].health > 0)
                     safe = false;
             }
-            if ((safe || cacingku.health > 30) && getFirstWormInRange() != null && enemy.roundsUntilUnfrozen == 0){
+            if ((safe || cacingku.health > 30) && enemy.roundsUntilUnfrozen == 0){
                 return true;
             }
         }
@@ -307,7 +393,7 @@ public class Bot {
                 }
 
                 Cell cell = gameState.map[coordinateY][coordinateX];
-                if (cell.type == CellType.DEEP_SPACE) {
+                if (cell.type == CellType.DEEP_SPACE || cell.type == CellType.LAVA) {
                     break;
                 }
 
