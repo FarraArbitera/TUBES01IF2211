@@ -78,8 +78,8 @@ public class Bot {
         List<Cell> surroundingBlocks = getSurroundingCells(currentWorm.position.x, currentWorm.position.y);
         //int cellIdx = random.nextInt(surroundingBlocks.size());
         int CenterCell = gameState.mapSize / 2;
-        if (gameState.map.stream().anyMatch(x -> x.powerup)){
-            Cell nearest = gameState.map.stream().filter(c -> c.powerup).sort((a,b) -> euclideanDistance(a.x,a.y,currentWorm.position.x,currentWorm.position.y) - euclideanDistance(b.x,b.y,currentWorm.position.x,currentWorm.position.y))[0];
+        if (Arrays.stream(gameState.map).anyMatch(x -> x.powerup != null)){
+            Cell nearest = Arrays.stream(gameState.map).filter(c -> c.powerup != null).sort((a,b) -> euclideanDistance(a.x,a.y,currentWorm.position.x,currentWorm.position.y) - euclideanDistance(b.x,b.y,currentWorm.position.x,currentWorm.position.y))[0];
             if (euclideanDistance(nearest.x,nearest.y,currentWorm.position.x,currentWorm.position.y) > euclideanDistance(CenterCell,CenterCell,currentWorm.position.x,currentWorm.position.y)){
                 for (int i = 0; i < surroundingBlocks.size(); i++) {
                     Cell block = surroundingBlocks.get(i);
